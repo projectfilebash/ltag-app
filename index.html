@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>LTAG — Login</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Serious, readable typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;700;800&family=IBM+Plex+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" />
+    <link href="css/style.css" rel="stylesheet" />
+  </head>
+  <body>
+    <div class="container container-narrow py-5">
+      <div class="row justify-content-center">
+        <div class="col-12 col-lg-7">
+          <div class="mono-card rounded-3 p-4 p-md-5">
+            <div class="mb-3">
+              <div class="brand-mark mb-1">
+                <span class="brand-chip">LTAG</span>
+                <span class="brand-sub">Emergency QR Tag</span>
+              </div>
+              <div class="text-mono-muted">Secure access to your emergency profile.</div>
+            </div>
+
+            <div class="mono-divider my-4"></div>
+
+            <ul class="nav nav-tabs" id="authTabs" role="tablist">
+              <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="login-tab" data-bs-toggle="tab" data-bs-target="#login" type="button" role="tab">Login</button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="signup-tab" data-bs-toggle="tab" data-bs-target="#signup" type="button" role="tab">Signup</button>
+              </li>
+            </ul>
+
+            <div class="tab-content pt-4">
+              <!-- LOGIN -->
+              <div class="tab-pane fade show active" id="login" role="tabpanel">
+                <form id="loginForm" class="d-grid gap-3" autocomplete="on">
+                  <div>
+                    <label class="form-label text-mono-muted mb-1">Email</label>
+                    <input class="form-control" type="email" id="loginEmail" required placeholder="you@example.com" />
+                  </div>
+                  <div>
+                    <label class="form-label text-mono-muted mb-1">Password</label>
+                    <input class="form-control" type="password" id="loginPassword" required minlength="6" placeholder="Minimum 6 characters" />
+                  </div>
+                  <div class="d-grid">
+                    <button class="btn btn-primary" type="submit">Login</button>
+                  </div>
+                  <div id="loginMsg" class="small text-mono-muted"></div>
+                </form>
+              </div>
+
+              <!-- SIGNUP -->
+              <div class="tab-pane fade" id="signup" role="tabpanel">
+                <form id="signupForm" class="d-grid gap-3" autocomplete="on">
+                  <div>
+                    <label class="form-label text-mono-muted mb-1">Email</label>
+                    <input class="form-control" type="email" id="signupEmail" required placeholder="you@example.com" />
+                  </div>
+                  <div>
+                    <label class="form-label text-mono-muted mb-1">Password</label>
+                    <input class="form-control" type="password" id="signupPassword" required minlength="6" placeholder="Minimum 6 characters" />
+                  </div>
+                  <div class="d-grid">
+                    <button class="btn btn-primary" type="submit">Create Account</button>
+                  </div>
+                  <div id="signupMsg" class="small text-mono-muted"></div>
+                </form>
+              </div>
+            </div>
+
+            <!-- Client-ready UI: no setup notes shown here -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Firebase compat SDKs (beginner-friendly script tags) -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+
+    <script src="js/firebase.js"></script>
+    <script src="js/auth.js"></script>
+
+    <script>
+      // Index page logic (simple, examiner-friendly)
+      window.MLL.redirectIfAuthed();
+
+      const loginForm = document.getElementById("loginForm");
+      const signupForm = document.getElementById("signupForm");
+      const loginMsg = document.getElementById("loginMsg");
+      const signupMsg = document.getElementById("signupMsg");
+
+      loginForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        loginMsg.textContent = "Signing in…";
+        try {
+          await window.MLL.login(
+            document.getElementById("loginEmail").value,
+            document.getElementById("loginPassword").value
+          );
+          window.location.href = "dashboard.html";
+        } catch (err) {
+          loginMsg.textContent = err?.message || "Login failed.";
+        }
+      });
+
+      signupForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        signupMsg.textContent = "Creating account…";
+        try {
+          await window.MLL.signup(
+            document.getElementById("signupEmail").value,
+            document.getElementById("signupPassword").value
+          );
+          window.location.href = "dashboard.html";
+        } catch (err) {
+          signupMsg.textContent = err?.message || "Signup failed.";
+        }
+      });
+    </script>
+  </body>
+</html>

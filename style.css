@@ -1,0 +1,138 @@
+/* LTAG - Client-ready serious styling
+   Theme: emergency / medical tag (clean, trustworthy)
+   - Uses a restrained palette (no gradients, no flashy animations) */
+
+:root{
+  /* Base */
+  --bg: #f5f7fb;
+  --fg: #0f172a;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --surface: #ffffff;
+
+  /* Brand (serious) */
+  --brand: #0b3a6a;      /* deep blue */
+  --brand-ink: #ffffff;  /* on brand */
+  --danger: #b91c1c;     /* emergency red (restrained) */
+}
+
+html, body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+/* Cards / surfaces */
+.mono-card {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+}
+
+.mono-surface {
+  background: #f8fafc;
+  border: 1px solid var(--border);
+}
+
+.text-mono-muted { color: var(--muted) !important; }
+
+.mono-divider {
+  height: 1px;
+  background: var(--border);
+  width: 100%;
+}
+
+.mono-badge {
+  display: inline-block;
+  padding: .25rem .5rem;
+  border: 1px solid var(--border);
+  background: #fff;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+/* Blood group emphasis (viewer page) */
+/* Add this to css/style.css */
+.badge-blood {
+  background-color: #fee2e2; /* Light red background */
+  color: #991b1b;           /* Dark red text */
+  border: 1px solid #fecaca;
+  padding: 0.25rem 0.5rem;
+  font-weight: 700;
+  display: inline-block;
+}
+
+/* Brand mark (tag-like) */
+.brand-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+}
+.brand-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: .25rem .5rem;
+  border: 1px solid rgba(11, 58, 106, 0.25);
+  background: var(--brand);
+  color: var(--brand-ink);
+  font-weight: 800;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+.brand-sub {
+  color: var(--muted);
+  font-size: .9rem;
+}
+
+/* QR canvas container */
+#qrBox {
+  display: grid;
+  place-items: center;
+  min-height: 220px;
+  border: 1px dashed var(--border);
+  background: #fff;
+}
+
+/* Buttons: override Bootstrap to match brand */
+.btn-primary {
+  background: var(--brand) !important;
+  border-color: var(--brand) !important;
+}
+.btn-primary:hover,
+.btn-primary:focus {
+  filter: brightness(0.95);
+}
+.btn-outline-primary {
+  border-color: var(--brand) !important;
+  color: var(--brand) !important;
+}
+.btn-outline-primary:hover,
+.btn-outline-primary:focus {
+  background: var(--brand) !important;
+  color: var(--brand-ink) !important;
+}
+
+/* Small emergency accent for critical text */
+.text-danger-strong { color: var(--danger) !important; }
+
+/* Keep it readable on mobile */
+.container-narrow {
+  max-width: 960px;
+}
+
+/* Profile photo (dashboard + viewer) */
+.avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 1px solid var(--border);
+  background: #fff;
+}
+.avatar-lg {
+  width: 72px;
+  height: 72px;
+}

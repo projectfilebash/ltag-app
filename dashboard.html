@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LTAG — Dashboard</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;700&family=IBM+Plex+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link href="css/style.css" rel="stylesheet" />
+</head>
+
+<body>
+<nav class="border-bottom">
+  <div class="container container-narrow py-3 d-flex justify-content-between align-items-center">
+    <div class="brand-mark">
+      <span class="brand-chip">LTAG</span>
+      <span class="brand-sub">User Dashboard</span>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <div class="small text-mono-muted">UID: <span id="uidText">—</span></div>
+      <button class="btn btn-outline-primary btn-sm" id="logoutBtn">Logout</button>
+    </div>
+  </div>
+</nav>
+
+<main class="container container-narrow py-4">
+  <div class="row g-4">
+
+    <div class="col-lg-6">
+      <div class="mono-card p-4 rounded-3">
+        <h2 class="h5">Emergency Profile</h2>
+        <div class="text-mono-muted small mb-3">Update your emergency details</div>
+
+        <form id="profileForm" class="d-grid gap-3">
+          <div>
+            <label class="form-label">Name</label>
+            <input class="form-control" id="profileName" required />
+          </div>
+
+          <div class="row g-2">
+            <div class="col-6">
+              <label class="form-label">Age</label>
+              <input class="form-control" id="age" type="number" min="0" max="120" />
+            </div>
+            <div class="col-6">
+              <label class="form-label">Blood Group</label>
+              <input class="form-control" id="bloodGroup" required />
+            </div>
+          </div>
+
+          <div>
+            <div class="d-flex justify-content-between">
+              <label class="form-label">Emergency Contacts</label>
+              <button class="btn btn-outline-primary btn-sm" id="addContactBtn" type="button">Add</button>
+            </div>
+            <div id="contactsBox" class="mt-2"></div>
+          </div>
+
+          <div>
+            <label class="form-label">Medical Notes</label>
+            <textarea class="form-control" id="medicalNotes" rows="4"></textarea>
+          </div>
+
+          <button class="btn btn-primary">Save Profile</button>
+          <div id="profileMsg" class="small text-mono-muted"></div>
+        </form>
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      
+      <div class="mono-card p-4 rounded-3 mb-4">
+        <h2 class="h5">QR Code</h2>
+        <div class="text-mono-muted small mb-3">Scan to open emergency card</div>
+
+        <input class="form-control mb-2" id="viewerUrl" readonly />
+
+        <div class="d-flex gap-2 mb-3">
+          <button class="btn btn-outline-primary btn-sm" id="copyUrlBtn">Copy Link</button>
+          <a class="btn btn-outline-primary btn-sm" id="openViewerBtn" target="_blank">Open Viewer</a>
+        </div>
+
+        <div class="text-center p-3 border rounded bg-white">
+           <img id="qrImage" src="" alt="Generating QR..." style="width: 200px; height: 200px;" />
+        </div>
+
+        <div class="d-flex gap-2 mt-3">
+          <button class="btn btn-primary" id="regenQrBtn">Refresh QR</button>
+          <a id="downloadQrLink" class="btn btn-outline-primary" download="ltag-qr.png">Download PNG</a>
+        </div>
+
+        <div id="qrMsg" class="small text-mono-muted mt-2"></div>
+      </div>
+
+      <div class="mono-card p-4 rounded-3">
+        <h2 class="h5">Scan History</h2>
+        <div id="historyMsg" class="small text-mono-muted mb-2">Recent views of your profile</div>
+        <div id="historyList" class="list-group list-group-flush">
+            <div class="text-center py-3 text-muted">Loading history...</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+
+<script src="js/firebase.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/profile.js"></script>
+<script src="js/qr.js"></script>
+
+<script>
+window.MLL.requireAuth();
+
+// Elements
+const profileNameInput = document.getElementById("profileName");
+const ageInput = document.getElementById("age");
+const bloodGroupInput = document.getElementById("bloodGroup");
+const notesInput = document.getElementById("medicalNotes");
+const contactsBox = document.getElementById("contactsBox");
+const profileMsg = document.getElementById("profileMsg");
+
+const viewerUrlInput = document.getElementById("viewerUrl");
+const openViewerBtn = document.getElementById("openViewerBtn");
+const qrImage = document.getElementById("qrImage"); // Using Image now
+const downloadQrLink = document.getElementById("downloadQrLink");
+
+// --- Profile Logic ---
+document.getElementById("logoutBtn").onclick = async () => {
+  await window.MLL.logout();
+  location.href = "index.html";
+};
+
+document.getElementById("addContactBtn").onclick = () =>
+  window.MLL.addContactRow(contactsBox, "", "");
+
+document.getElementById("profileForm").onsubmit = async (e) => {
+  e.preventDefault();
+  const u = window.MLL.currentUser();
+  profileMsg.textContent = "Saving…";
+
+  try {
+    await window.MLL.saveProfile(u.uid, {
+      name: profileNameInput.value, 
+      age: ageInput.value,
+      bloodGroup: bloodGroupInput.value,
+      medicalNotes: notesInput.value,
+      emergencyContacts: window.MLL.parseContactsFromForm(contactsBox)
+    });
+    
+    profileMsg.textContent = "Profile saved.";
+    profileMsg.className = "small text-success fw-bold";
+    generateQr(u.uid);
+  } catch (err) {
+    console.error(err);
+    profileMsg.textContent = "Error: " + err.message;
+  }
+};
+
+// --- QR Logic (New API Method) ---
+function generateQr(uid) {
+  const url = window.MLL.buildViewerUrl(uid);
+  
+  // Update Inputs
+  if(viewerUrlInput) viewerUrlInput.value = url;
+  if(openViewerBtn) openViewerBtn.href = url;
+  
+  // Generate using QR Server API (No script needed)
+  const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}`;
+  
+  if(qrImage) {
+    qrImage.src = qrApiUrl;
+    // Set up download link
+    downloadQrLink.href = qrApiUrl;
+  }
+}
+
+document.getElementById("regenQrBtn").onclick = () => {
+  const u = window.MLL.currentUser();
+  if (u) generateQr(u.uid);
+};
+
+document.getElementById("copyUrlBtn").onclick = async () => {
+  if (viewerUrlInput.value) {
+    await navigator.clipboard.writeText(viewerUrlInput.value);
+    alert("Link copied!");
+  }
+};
+
+// --- History Logic ---
+function loadScanHistory(uid) {
+    const list = document.getElementById("historyList");
+    window.MLL.db.collection("scans")
+        .doc(uid)
+        .collection("logs")
+        .orderBy("timestamp", "desc")
+        .limit(10)
+        .onSnapshot((snapshot) => {
+            list.innerHTML = "";
+            if (snapshot.empty) {
+                list.innerHTML = `<div class="p-3 text-center text-mono-muted small">No scans recorded yet.</div>`;
+                return;
+            }
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+                const time = data.timestamp ? data.timestamp.toDate().toLocaleString() : "Just now";
+                let device = "Unknown Device";
+                if(data.userAgent) {
+                  if(data.userAgent.includes("iPhone")) device = "iPhone";
+                  else if(data.userAgent.includes("Android")) device = "Android";
+                  else if(data.userAgent.includes("Mac")) device = "Mac";
+                  else if(data.userAgent.includes("Windows")) device = "Windows";
+                }
+                list.innerHTML += `
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <span class="fw-bold small">${device}</span>
+                        <span class="text-mono-muted small" style="font-size: 0.75rem">${time}</span>
+                    </div>`;
+            });
+        });
+}
+
+// --- Init ---
+window.MLL.auth.onAuthStateChanged(async (u) => {
+  if (!u) return;
+  document.getElementById("uidText").textContent = u.uid;
+
+  const p = await window.MLL.getProfile(u.uid);
+  if (p) {
+    profileNameInput.value = p.name || "";
+    ageInput.value = p.age || "";
+    bloodGroupInput.value = p.bloodGroup || "";
+    notesInput.value = p.medicalNotes || "";
+    window.MLL.renderContactsToForm(contactsBox, p.emergencyContacts || []);
+  } else {
+    window.MLL.addContactRow(contactsBox, "", "");
+  }
+
+  generateQr(u.uid);
+  loadScanHistory(u.uid);
+});
+</script>
+</body>
+</html>
