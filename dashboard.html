@@ -129,7 +129,7 @@ const profileMsg = document.getElementById("profileMsg");
 
 const viewerUrlInput = document.getElementById("viewerUrl");
 const openViewerBtn = document.getElementById("openViewerBtn");
-const qrImage = document.getElementById("qrImage"); // Using Image now
+const qrImage = document.getElementById("qrImage"); 
 const downloadQrLink = document.getElementById("downloadQrLink");
 
 // --- Profile Logic ---
@@ -164,15 +164,16 @@ document.getElementById("profileForm").onsubmit = async (e) => {
   }
 };
 
-// --- QR Logic (New API Method) ---
+// --- QR Logic (FIXED FOR GITHUB PAGES) ---
 function generateQr(uid) {
-  const url = window.MLL.buildViewerUrl(uid);
+  // CRITICAL FIX: Explicitly added "ltag-app/" so the link finds the right folder
+  const url = `https://projectfilebash.github.io/ltag-app/view.html?uid=${uid}`;
   
   // Update Inputs
   if(viewerUrlInput) viewerUrlInput.value = url;
   if(openViewerBtn) openViewerBtn.href = url;
   
-  // Generate using QR Server API (No script needed)
+  // Generate using QR Server API
   const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}`;
   
   if(qrImage) {
@@ -248,5 +249,4 @@ window.MLL.auth.onAuthStateChanged(async (u) => {
 });
 </script>
 </body>
-
 </html>
